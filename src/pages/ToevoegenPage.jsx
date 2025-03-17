@@ -1,76 +1,67 @@
-// src/pages/ToevoegenPage.jsx
 import React, { useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const apiEndPoint = "https://api-o0p6.onrender.com/api/user";
 
 export default function ToevoegenPage() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
+  const [newUser, setNewUser] = useState({
+    first_name: "",
+    last_name: "",
+    login: "",
+    password: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewUser((prevUser) => ({ ...prevUser, [name]: value }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newUser = {
-      first_name: firstName,
-      last_name: lastName,
-      login,
-      password,
-    };
-
-    axios
-      .post(apiEndPoint, newUser)
-      .then((response) => {
-        alert("Gebruiker toegevoegd!");
-        setFirstName("");
-        setLastName("");
-        setLogin("");
-        setPassword("");
-      })
-      .catch((error) => {
-        console.error("Fout bij toevoegen gebruiker:", error);
-      });
+    axios.post(apiEndPoint, newUser).then(() => {
+      alert("Gebruiker toegevoegd!");
+      setNewUser({ first_name: "", last_name: "", login: "", password: "" });
+    });
   };
 
   return (
     <div>
-      <h1>Voeg Gebruiker Toe</h1>
+      <h2>Voeg Gebruiker Toe</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Voornaam:</label>
-          <input
-            type="text"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Achternaam:</label>
-          <input
-            type="text"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Login:</label>
-          <input
-            type="text"
-            value={login}
-            onChange={(e) => setLogin(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Wachtwoord:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        <input
+          type="text"
+          name="first_name"
+          value={newUser.first_name}
+          onChange={handleInputChange}
+          placeholder="Voornaam"
+        />
+        <input
+          type="text"
+          name="last_name"
+          value={newUser.last_name}
+          onChange={handleInputChange}
+          placeholder="Achternaam"
+        />
+        <input
+          type="text"
+          name="login"
+          value={newUser.login}
+          onChange={handleInputChange}
+          placeholder="Login"
+        />
+        <input
+          type="password"
+          name="password"
+          value={newUser.password}
+          onChange={handleInputChange}
+          placeholder="Wachtwoord"
+        />
         <button type="submit">Toevoegen</button>
       </form>
+
+      {/* Knop om terug naar de homepagina (App) te gaan */}
+      <Link to="/">Terug naar Home</Link>
     </div>
   );
 }

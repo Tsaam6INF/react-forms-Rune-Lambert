@@ -1,114 +1,124 @@
-// src/pages/AanpassenPage.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const apiEndPoint = "https://api-o0p6.onrender.com/api/user";
 
 export default function AanpassenPage() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
 
+  // Fetch all users when the component mounts
   useEffect(() => {
     axios
       .get(apiEndPoint)
-      .then(({ data }) => {
-        console.log("Gebruikers data geladen:", data); // Voeg deze regel toe
-        setUsers(data.data); // Zorg ervoor dat je 'data.data' gebruikt omdat het antwoord object is
-      })
-      .catch((error) => {
-        console.error(
-          "Er is een fout bij het ophalen van de gebruikers:",
-          error
-        );
-      });
+      .then(({ data }) => setUsers(data.data))
+      .catch((error) => console.error("Error fetching users:", error));
   }, []);
 
-  const handleEdit = (user) => {
+  // Select a user for editing
+  const handleUserSelect = (user) => {
     setSelectedUser(user);
-    setFirstName(user.first_name);
-    setLastName(user.last_name);
-    setLogin(user.login);
-    setPassword(user.password);
   };
 
+  // Handle input changes for the selected user
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedUser((prevUser) => ({
+      ...prevUser,
+      [name]: value,
+    }));
+  };
+
+  // Submit the update for the selected user
   const handleSubmit = (e) => {
     e.preventDefault();
-    const updatedUser = {
-      first_name: firstName,
-      last_name: lastName,
-      login,
-      password,
-    };
 
-    axios
-      .put(`${apiEndPoint}/${selectedUser.user_id}`, updatedUser)
-      .then((response) => {
-        alert("Gebruiker aangepast!");
-        setSelectedUser(null);
-      })
-      .catch((error) => {
-        console.error("Fout bij aanpassen gebruiker:", error);
-      });
+    if (selectedUser) {
+      console.log("Updating user with ID:", selectedUser.user_id);
+
+      // Log the full URL to make sure it's correct
+      const updateUrl = `${apiEndPoint}/${selectedUser.user_id}`;
+      console.log("Request URL:", updateUrl);
+
+      axios
+        .put(updateUrl, selectedUser)
+        .then(() => {
+          alert("Gebruiker succesvol aangepast!");
+          setSelectedUser(null); // Reset the selected user
+        })
+        .catch((error) => {
+          console.error("Error updating user:", error);
+          alert(
+            "Er is een fout opgetreden bij het aanpassen van de gebruiker."
+          );
+        });
+    }
   };
 
   return (
     <div>
-      <h1>Aanpassen Gebruiker</h1>
+      <h2>Pas Gebruiker Aan</h2>
+
+      {/* Display the list of users */}
       <ul>
         {users.map((user) => (
           <li key={user.user_id}>
-            {user.first_name} {user.last_name}
-            <button onClick={() => handleEdit(user)}>Aanpassen</button>
+            {user.first_name} {user.last_name}{" "}
+            <button onClick={() => handleUserSelect(user)}>Aanpassen</button>
           </li>
         ))}
       </ul>
 
+      {/* Show the form if a user is selected */}
       {selectedUser && (
-        <div>
-          <h2>
-            Aanpassen voor {selectedUser.first_name} {selectedUser.last_name}
-          </h2>
-          <form onSubmit={handleSubmit}>
-            <div>
-              <label>Voornaam:</label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
-            </div>
-            <div>
-              <label>Achternaam:</label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-              />
-            </div>
-            <div>
-              <label>Login:</label>
-              <input
-                type="text"
-                value={login}
-                onChange={(e) => setLogin(e.target.value)}
-              />
-            </div>
-            <div>
-              <label>Wachtwoord:</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <button type="submit">Opslaan</button>
-          </form>
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label>Voornaam:</label>
+            <input
+              type="text"
+              name="first_name"
+              value={selectedUser.first_name}
+              onChange={handleInputChange}
+              placeholder="Voornaam"
+            />
+          </div>
+          <div>
+            <label>Achternaam:</label>
+            <input
+              type="text"
+              name="last_name"
+              value={selectedUser.last_name}
+              onChange={handleInputChange}
+              placeholder="Achternaam"
+            />
+          </div>
+          <div>
+            <label>Login:</label>
+            <input
+              type="text"
+              name="login"
+              value={selectedUser.login}
+              onChange={handleInputChange}
+              placeholder="Login"
+            />
+          </div>
+          <div>
+            <label>Wachtwoord:</label>
+            <input
+              type="password"
+              name="password"
+              value={selectedUser.password}
+              onChange={handleInputChange}
+              placeholder="Wachtwoord"
+            />
+          </div>
+          <button type="submit">Opslaan</button>
+        </form>
       )}
+
+      {/* Knop om terug naar de homepagina (App) te gaan */}
+      <Link to="/">Terug naar Home</Link>
     </div>
   );
 }
